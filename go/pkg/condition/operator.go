@@ -1,0 +1,36 @@
+package condition
+
+// Value is a generic condition value (string, number, bool, list, etc.).
+type Value = any
+
+// Context provides access to request context keys.
+type Context map[string]Value
+
+// Operator evaluates a condition key against an expected value using a specific
+// operator semantics (e.g., StringEquals, Bool, NumericLessThan, etc.).
+type Operator interface {
+    Name() string
+    Eval(actual Value, expected Value) (bool, error)
+}
+
+// Registry holds known operators by canonical name.
+type Registry struct{
+    ops map[string]Operator
+}
+
+// NewRegistry creates an empty registry.
+func NewRegistry() *Registry { return &Registry{ops: map[string]Operator{}} }
+
+// Register adds or replaces an operator by name.
+func (r *Registry) Register(op Operator) { r.ops[op.Name()] = op }
+
+// Get returns an operator by name, or nil if not found.
+func (r *Registry) Get(name string) Operator { return r.ops[name] }
+
+// Default registry with a minimal set of operators.
+var Default = func() *Registry {
+    reg := NewRegistry()
+    reg.Register(StringEquals{})
+    reg.Register(Bool{})
+    return reg
+}()
