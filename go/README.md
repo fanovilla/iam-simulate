@@ -2,7 +2,7 @@ iam-simulate-go (work in progress)
 
 This directory contains the Go port of `@cloud-copilot/iam-simulate`.
 
-- Module: `github.com/cloud-copilot/iam-simulate-go`
+- Module: `github.com/fanovilla/iam-simulate-go`
 - Minimum Go: 1.22+
 
 Packages:

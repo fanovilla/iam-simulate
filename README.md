@@ -1,10 +1,12 @@
 # IAM Simulate
 
-[![NPM Version](https://img.shields.io/npm/v/@cloud-copilot/iam-simulate.svg?logo=nodedotjs)](https://www.npmjs.com/package/@cloud-copilot/iam-simulate) [![License: AGPL v3](https://img.shields.io/github/license/cloud-copilot/iam-simulate)](LICENSE.txt) [![GuardDog](https://github.com/cloud-copilot/iam-simulate/actions/workflows/guarddog.yml/badge.svg)](https://github.com/cloud-copilot/iam-simulate/actions/workflows/guarddog.yml) [![Known Vulnerabilities](https://snyk.io/test/github/cloud-copilot/iam-simulate/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/cloud-copilot/iam-simulate?targetFile=package.json)
+[![NPM Version](https://img.shields.io/npm/v/@cloud-copilot/iam-simulate.svg?logo=nodedotjs)](https://www.npmjs.com/package/@cloud-copilot/iam-simulate) [![License: AGPL v3](https://img.shields.io/github/license/cloud-copilot/iam-simulate)](LICENSE.txt) [![GuardDog](https://github.com/fanovilla/iam-simulate/actions/workflows/guarddog.yml/badge.svg)](https://github.com/fanovilla/iam-simulate/actions/workflows/guarddog.yml) [![Known Vulnerabilities](https://snyk.io/test/github/cloud-copilot/iam-simulate/badge.svg?targetFile=package.json&style=flat-square)](https://snyk.io/test/github/cloud-copilot/iam-simulate?targetFile=package.json)
 
 An AWS IAM Simulator and Policy Tester built as a Node/Typescript library.
 
 The simulator currently supports these features of AWS IAM
+
+For a high-level overview of how the simulator is designed and how modules interact, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ### IAM Feature Support
 
@@ -21,8 +23,8 @@ The simulator currently supports these features of AWS IAM
 
 iam-simulate will automatically validate inputs including
 
-- IAM policies using [iam-policy](https://github.com/cloud-copilot/iam-policy)
-- IAM Actions using [iam-data](https://github.com/cloud-copilot/iam-data)
+- IAM policies using [iam-policy](https://github.com/fanovilla/iam-policy)
+- IAM Actions using [iam-data](https://github.com/fanovilla/iam-data)
 - The resource ARN against allowed resource types for the action
 - The context keys allowed for the action/resource and their types.
 
