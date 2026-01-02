@@ -2,6 +2,7 @@ package simulate
 
 import (
 	"context"
+
 	eg "github.com/fanovilla/iam-simulate-go/internal/engine"
 )
 
@@ -19,7 +20,11 @@ func RunSimulation(ctx context.Context, sim Simulation, opts ...Option) (Simulat
 	if err != nil {
 		return SimulationResult{}, err
 	}
- r, a, err := eg.Evaluate(sim.Action, sim.Resource, sim.Principal, sim.Context, idp, rsp)
+	scp, err := eg.DecodePolicies(sim.SCPs)
+	if err != nil {
+		return SimulationResult{}, err
+	}
+	r, a, err := eg.Evaluate(sim.Action, sim.Resource, sim.Principal, sim.Context, idp, rsp, scp)
 	if err != nil {
 		return SimulationResult{}, err
 	}
@@ -41,7 +46,11 @@ func RunUnsafeSimulation(ctx context.Context, sim Simulation, opts ...Option) (S
 	if err != nil {
 		return SimulationResult{}, err
 	}
- r, a, err := eg.Evaluate(sim.Action, sim.Resource, sim.Principal, sim.Context, idp, rsp)
+	scp, err := eg.DecodePolicies(sim.SCPs)
+	if err != nil {
+		return SimulationResult{}, err
+	}
+	r, a, err := eg.Evaluate(sim.Action, sim.Resource, sim.Principal, sim.Context, idp, rsp, scp)
 	if err != nil {
 		return SimulationResult{}, err
 	}

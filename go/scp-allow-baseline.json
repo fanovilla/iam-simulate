@@ -1,0 +1,52 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowCoreManagementServices",
+      "Effect": "Allow",
+      "Action": [
+        "organizations:*",
+        "iam:*",
+        "cloudtrail:*",
+        "cloudwatch:*",
+        "logs:*",
+        "support:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowSecurityAndCompliance",
+      "Effect": "Allow",
+      "Action": [
+        "config:*",
+        "guardduty:*",
+        "securityhub:*",
+        "kms:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowBillingAndCostManagement",
+      "Effect": "Allow",
+      "Action": [
+        "aws-portal:*",
+        "budgets:*",
+        "ce:*",
+        "cur:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowCommonOperationalServices",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "s3:*",
+        "vpc:*",
+        "cloudformation:*",
+        "ssm:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+     "Version": "2012-10-17",
+     "Statement": [
+         {
+             "Sid": "DenyModifyTagsIfNotAuthorized",
+             "Effect": "Deny",
+             "Action": [
+                 "ec2:DeleteTags",
+                 "ec2:CreateTags"
+             ],
+             "Resource": "*",
+             "Condition": {
+                 "ForAnyValue:StringEquals": {
+                     "aws:TagKeys": [
+                         "CostCenter",
+                         "Project"
+                     ]
+                 },
+                 "StringNotEquals": {
+                     "aws:PrincipalArn": "arn:aws:iam::*:role/TagAdministrator"
+                 }
+             }
+         }
+     ]
+}

@@ -1,13 +1,13 @@
 package engine
 
 import (
-    "encoding/json"
-    "fmt"
+	"encoding/json"
+	"fmt"
 
-    "github.com/fanovilla/iam-simulate-go/pkg/action"
-    "github.com/fanovilla/iam-simulate-go/pkg/arn"
-    "github.com/fanovilla/iam-simulate-go/pkg/condition"
-    "github.com/fanovilla/iam-simulate-go/pkg/policy"
+	"github.com/fanovilla/iam-simulate-go/pkg/action"
+	"github.com/fanovilla/iam-simulate-go/pkg/arn"
+	"github.com/fanovilla/iam-simulate-go/pkg/condition"
+	"github.com/fanovilla/iam-simulate-go/pkg/policy"
 )
 
 // Result is the core engine decision enumeration.
@@ -22,14 +22,15 @@ const (
 // Analysis is a placeholder for detailed per-layer analysis.
 type Analysis struct{}
 
-// Evaluate performs evaluation against identity and resource policies.
+// Evaluate performs evaluation against identity, resource, and SCP policies.
 // It matches action/resource with explicit deny precedence and evaluates
 // policy conditions against the provided context.
-func Evaluate(actionStr, resourceStr, principal string, ctx map[string]any, idPolicies, resPolicies []policy.PolicyDocument) (Result, *Analysis, error) {
-    act, err := action.Parse(actionStr)
-    if err != nil {
-        return ResultImplicitlyDenied, nil, fmt.Errorf("parse action: %w", err)
-    }
+// SCPs are evaluated as an additional layer: if SCPs don't allow the action, it's implicitly denied.
+func Evaluate(actionStr, resourceStr, principal string, ctx map[string]any, idPolicies, resPolicies, scpPolicies []policy.PolicyDocument) (Result, *Analysis, error) {
+	act, err := action.Parse(actionStr)
+	if err != nil {
+		return ResultImplicitlyDenied, nil, fmt.Errorf("parse action: %w", err)
+	}
 	var res arn.ARN
 	if resourceStr != "*" {
 		res, err = arn.Parse(resourceStr)
@@ -40,8 +41,21 @@ func Evaluate(actionStr, resourceStr, principal string, ctx map[string]any, idPo
 		res = arn.ARN{Partition: "*", Service: "*", Region: "*", AccountID: "*", Resource: "*"}
 	}
 
- idRes := evalPolicies(act, res, ctx, idPolicies)
- rpRes := evalPolicies(act, res, ctx, resPolicies)
+	// Evaluate SCPs first - they act as a permission boundary
+	scpRes := evalPolicies(act, res, ctx, scpPolicies)
+
+	// Explicit deny in SCP trumps everything
+	if scpRes == ResultExplicitlyDenied {
+		return ResultExplicitlyDenied, &Analysis{}, nil
+	}
+
+	// If SCPs are present but don't allow, it's an implicit deny
+	if len(scpPolicies) > 0 && scpRes != ResultAllowed {
+		return ResultImplicitlyDenied, &Analysis{}, nil
+	}
+
+	idRes := evalPolicies(act, res, ctx, idPolicies)
+	rpRes := evalPolicies(act, res, ctx, resPolicies)
 
 	// Precedence: any explicit deny anywhere -> deny
 	if idRes == ResultExplicitlyDenied || rpRes == ResultExplicitlyDenied {
@@ -57,58 +71,58 @@ func Evaluate(actionStr, resourceStr, principal string, ctx map[string]any, idPo
 }
 
 func evalPolicies(act action.Name, res arn.ARN, ctx map[string]any, docs []policy.PolicyDocument) Result {
-    anyAllow := false
-    for _, doc := range docs {
-        for _, st := range doc.Statement {
-            // Parse and match action
-            if !matchesAction(act, st) {
-                continue
-            }
-            // Parse and match resource
-            if !matchesResource(res, st) {
-                continue
-            }
-            // Match conditions (if any)
-            if !matchesConditions(ctx, st) {
-                continue
-            }
-            if st.Effect == policy.EffectDeny {
-                return ResultExplicitlyDenied
-            }
-            if st.Effect == policy.EffectAllow {
-                anyAllow = true
-            }
-        }
-    }
-    if anyAllow {
-        return ResultAllowed
-    }
-    return ResultImplicitlyDenied
+	anyAllow := false
+	for _, doc := range docs {
+		for _, st := range doc.Statement {
+			// Parse and match action
+			if !matchesAction(act, st) {
+				continue
+			}
+			// Parse and match resource
+			if !matchesResource(res, st) {
+				continue
+			}
+			// Match conditions (if any)
+			if !matchesConditions(ctx, st) {
+				continue
+			}
+			if st.Effect == policy.EffectDeny {
+				return ResultExplicitlyDenied
+			}
+			if st.Effect == policy.EffectAllow {
+				anyAllow = true
+			}
+		}
+	}
+	if anyAllow {
+		return ResultAllowed
+	}
+	return ResultImplicitlyDenied
 }
 
 func matchesConditions(ctx map[string]any, st policy.Statement) bool {
-    if len(st.Condition) == 0 {
-        return true
-    }
-    reg := condition.Default
-    for opName, conds := range st.Condition {
-        op := reg.Get(opName)
-        if op == nil {
-            // Unknown operator -> do not match for safety
-            return false
-        }
-        for key, expected := range conds {
-            actual, ok := ctx[key]
-            if !ok {
-                return false
-            }
-            okEval, err := op.Eval(actual, expected)
-            if err != nil || !okEval {
-                return false
-            }
-        }
-    }
-    return true
+	if len(st.Condition) == 0 {
+		return true
+	}
+	reg := condition.Default
+	for opName, conds := range st.Condition {
+		op := reg.Get(opName)
+		if op == nil {
+			// Unknown operator -> do not match for safety
+			return false
+		}
+		for key, expected := range conds {
+			actual, ok := ctx[key]
+			if !ok {
+				return false
+			}
+			okEval, err := op.Eval(actual, expected)
+			if err != nil || !okEval {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func matchesAction(a action.Name, st policy.Statement) bool {

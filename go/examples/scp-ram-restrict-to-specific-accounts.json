@@ -1,0 +1,25 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "OnlyNamedAccountsCanSharePrefixLists",
+            "Effect": "Deny",
+            "Action": [
+                "ram:AssociateResourceShare",
+                "ram:CreateResourceShare"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringNotEquals": {
+                    "aws:PrincipalAccount": [
+                        "111111111111",
+                        "222222222222"
+                    ]
+                },
+                "StringEquals": {
+                    "ram:RequestedResourceType": "ec2:PrefixList"
+                }
+            }
+        }
+    ]
+}

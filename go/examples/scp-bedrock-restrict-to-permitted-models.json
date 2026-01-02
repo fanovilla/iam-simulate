@@ -1,0 +1,13 @@
+{
+   "Version":"2012-10-17",
+   "Statement": [
+     {
+       "Sid": "PermittedModels",
+       "Effect": "Deny",
+       "Action": "bedrock:*",
+       "NotResource": [
+         "arn:aws:bedrock:*:*:foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0"
+       ]
+     }
+   ]
+}

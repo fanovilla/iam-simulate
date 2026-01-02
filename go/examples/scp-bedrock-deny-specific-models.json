@@ -1,0 +1,13 @@
+{
+   "Version":"2012-10-17",
+   "Statement": [
+     {
+       "Sid": "DenyModelAccessEverywhere",
+       "Effect": "Deny",
+       "Action": "bedrock:*",
+       "Resource": [
+         "arn:aws:bedrock:*:*:foundation-model/deepseek.*"
+       ]
+     }
+   ]
+}

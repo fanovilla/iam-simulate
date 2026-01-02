@@ -1,0 +1,69 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyLeavingOrganization",
+      "Effect": "Deny",
+      "Action": [
+        "organizations:LeaveOrganization"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyDisablingCloudTrail",
+      "Effect": "Deny",
+      "Action": [
+        "cloudtrail:StopLogging",
+        "cloudtrail:DeleteTrail",
+        "cloudtrail:UpdateTrail"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyDisablingSecurityServices",
+      "Effect": "Deny",
+      "Action": [
+        "guardduty:DeleteDetector",
+        "guardduty:DisassociateFromMasterAccount",
+        "guardduty:StopMonitoringMembers",
+        "securityhub:DisableSecurityHub",
+        "securityhub:DisassociateFromMasterAccount",
+        "config:DeleteConfigurationRecorder",
+        "config:StopConfigurationRecorder"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyRestrictedRegions",
+      "Effect": "Deny",
+      "NotAction": [
+        "cloudfront:*",
+        "iam:*",
+        "route53:*",
+        "support:*",
+        "organizations:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "us-east-1",
+            "us-west-2",
+            "eu-west-1"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "DenyRootUserActions",
+      "Effect": "Deny",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "aws:PrincipalArn": "arn:aws:iam::*:root"
+        }
+      }
+    }
+  ]
+}
